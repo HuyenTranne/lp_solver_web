@@ -1455,14 +1455,13 @@ def hai_pha(A,b,c,loai):
     tableau = pha1(tableau, x0_col= A.shape[1])
     if tableau is not None:
         tableau = pha2(tableau, c, A, b)
-        
         if isinstance(tableau, np.ndarray):
-            in_ket_qua_cuoi_cung(tableau, c, A, loai)
+            final_x_values, val_primal = in_ket_qua_cuoi_cung(tableau, c, A, loai)
         elif tableau == "UNBOUNDED":
-            in_ket_qua_cuoi_cung("UNBOUNDED", c, A, loai)
+            final_x_values, val_primal = in_ket_qua_cuoi_cung("UNBOUNDED", c, A, loai)
     else:
-        in_ket_qua_cuoi_cung(None, c, A, loai)
-    
+        final_x_values, val_primal = None, None
+
     return final_x_values, val_primal
 
 
