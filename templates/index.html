@@ -2,10 +2,10 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8" />
-    <title>Giải bài toán Quy Hoạch Tuyến Tính</title>
+    <title>Giải bài toán quy hoạch Tuyến Tính</title>
 </head>
 <body>
-    <h1>Giải bài toán Quy Hoạch Tuyến Tính</h1>
+    <h1>Giải bài toán quy hoạch Tuyến Tính</h1>
 
     <form id="lpForm">
         <label>Loại bài toán:</label>
@@ -84,10 +84,23 @@
                 return;
             }
 
+            // Lấy phần b từ các ràng buộc
+            let b_arr = [];
+            for (let i = 0; i < parseInt(num_cons); i++) {
+                const val = document.querySelector(`input[name="constraint_${i}"]`);
+                if (!val || !val.value.trim()) {
+                    alert(`Bạn phải nhập ràng buộc thứ ${i + 1}!`);
+                    return;
+                }
+                let parts = val.value.trim().split(' ');
+                // Lấy phần tử cuối làm b (phần hằng số bên phải ràng buộc)
+                b_arr.push(parts[parts.length - 1]);
+            }
+
             fetch('/get_methods', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({num_vars, num_cons})
+                body: JSON.stringify({num_vars, num_cons, b: b_arr})
             })
             .then(res => res.json())
             .then(data => {
@@ -95,8 +108,8 @@
                 phuongPhapSelect.innerHTML = '<option value="">-- Chọn phương pháp --</option>';
                 methods.forEach(m => {
                     const opt = document.createElement('option');
-                    opt.value = m.id;       // dùng id làm value
-                    opt.textContent = m.name;  // hiển thị tên
+                    opt.value = m.id;
+                    opt.textContent = m.name;
                     phuongPhapSelect.appendChild(opt);
                 });
             })
@@ -139,7 +152,7 @@
             .then(data => {
                 resultPre.textContent = data.ket_qua;
             })
-            .catch(err => {
+            .catch(() => {
                 resultPre.textContent = "Lỗi khi gọi server!";
             });
         });
