@@ -56,27 +56,36 @@ def get_methods():
 
 @app.route('/solve', methods=['POST'])
 def solve():
-    data = request.json
-    loai_bt = data.get('loai_bt')
-    num_vars = int(data.get('num_vars', 0))
-    num_cons = int(data.get('num_cons', 0))
-    c = list(map(float, data.get('c', '').strip().split()))
+    try:
+        data = request.json
+        print("Received JSON:", data)  # <--- Thêm dòng này để debug
 
-    A = []
-    rls = []
-    b = []
-    constraints = data.get('constraints', [])
-    for constr in constraints:
-        parts = constr.strip().split()
-        A.append(list(map(float, parts[:num_vars])))
-        rls.append(parts[num_vars])
-        b.append(float(parts[num_vars + 1]))
+        loai_bt = data.get('loai_bt')
+        num_vars = int(data.get('num_vars', 0))
+        num_cons = int(data.get('num_cons', 0))
+        c = list(map(float, data.get('c', '').strip().split()))
 
-    var_types = data.get('var_types', '').strip().split()
-    phuong_phap = data.get('phuong_phap')
+        A = []
+        rls = []
+        b = []
+        constraints = data.get('constraints', [])
+        for constr in constraints:
+            parts = constr.strip().split()
+            A.append(list(map(float, parts[:num_vars])))
+            rls.append(parts[num_vars])
+            b.append(float(parts[num_vars + 1]))
 
-    ket_qua = giai_tu_dong(loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)
-    return jsonify({'ket_qua': ket_qua})
+        var_types = data.get('var_types', '').strip().split()
+        phuong_phap = data.get('phuong_phap')
+
+        print("Parsed data:", loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)  # log
+
+        ket_qua = giai_tu_dong(loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)
+        return jsonify({'ket_qua': ket_qua})
+    except Exception as e:
+        print("LỖI SERVER:", str(e))  # In lỗi cụ thể ra console
+        return jsonify({'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1181,6 +1181,10 @@ def don_hinh(c_std, A_std, b_std, loai_bt, n_original_vars, var_types, standardi
                 B[i, :] -= B[i, bien_vao_col_idx] * B[bien_ra_row_idx, :]
 
 def hai_pha(A,b,c,loai):
+    m, n = A.shape
+
+    final_x_values = np.zeros(n)
+    val_primal = 0
 
     def print_tableau(tableau, step=None):
             print("\n========== Bảng từ vựng {} ==========".format(step if step is not None else ""))
@@ -1492,7 +1496,7 @@ def giai_tu_dong(loai_bt, c_original, A_original, b_original, rls, n_original_va
     c_original = np.array(c_original)
     A_original = np.array(A_original)
     b_original = np.array(b_original)
-    
+
     c_std, A_std, b_std, n_std, std_var_names = chuyen_ve_dang_chuan(loai_bt, c_original, A_original, b_original, rls, var_types)
 
     #phuong_phap_duoc_chon = xet_phuong_phap(n_original_vars, b_std)
