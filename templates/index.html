@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Giải QHTT</title>
+</head>
+<body>
+    <h1>Giải bài toán Quy hoạch tuyến tính</h1>
+    <form method="post" action="/solve">
+        <label>Loại bài toán:</label>
+        <select name="loai">
+            <option value="max">Tối đa</option>
+            <option value="min">Tối thiểu</option>
+        </select><br><br>
+
+        <label>Phương pháp:</label>
+        <select name="phuong_phap">
+            <option value="hinh_hoc">Hình học</option>
+            <option value="don_hinh">Đơn hình</option>
+            <option value="bland">Bland</option>
+            <option value="hai_pha">Hai pha</option>
+        </select><br><br>
+
+        <label>Hệ số hàm mục tiêu (c):</label><br>
+        <input type="text" name="c" placeholder="VD: 3 2"><br><br>
+
+        <label>Ma trận A (mỗi dòng 1 dòng):</label><br>
+        <textarea name="A" rows="4" cols="30" placeholder="VD:
+1 2
+3 4"></textarea><br><br>
+
+        <label>Vector b:</label><br>
+        <input type="text" name="b" placeholder="VD: 6 12"><br><br>
+
+        <label>Dấu ràng buộc:</label><br>
+        <textarea name="rls" rows="4" cols="30" placeholder="<=
+<="></textarea><br><br>
+
+        <label>Ràng buộc biến:</label><br>
+        <input name="var_types" placeholder="VD: >= >="><br><br>
+
+        <input type="submit" value="Giải">
+    </form>
+
+    {% if message %}
+    <p style="color:green;">{{ message }}</p>
+    {% endif %}
+</body>
+</html>
