@@ -4,26 +4,74 @@ from qhtt import giai_tu_dong
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    methods = None
+    message = None
+    result = None
 
-@app.route('/solve', methods=['POST'])
-def solve():
-    try:
-        loai_bt = request.form['loai']
-        phuong_phap = request.form['phuong_phap']
-        c = list(map(float, request.form['c'].split()))
-        A = [list(map(float, row.split())) for row in request.form['A'].strip().split('\n')]
-        b = list(map(float, request.form['b'].split()))
-        rls = request.form['rls'].strip().split('\n')
-        var_types = request.form['var_types'].strip().split()
+    if request.method == 'POST':
+        action = request.form.get('action')
 
-        result = giai_tu_dong(loai_bt, np.array(c), np.array(A), np.array(b), rls, var_types, phuong_phap)
+        # Lấy dữ liệu nhập đúng tên trường
+        loai_bt = request.form.get('problem_type')
+        c_raw = request.form.get('objective_coeffs', '')
+        constraints_raw = request.form.get('constraints', '').strip()
+        var_bounds_raw = request.form.get('variable_bounds', '').strip()
 
-        return render_template('index.html', message="Đã giải xong! Xem kết quả trên terminal hoặc biểu đồ.")
-    except Exception as e:
-        return render_template('index.html', message=f"Lỗi: {str(e)}")
+        # Phân tích dữ liệu nhập
+        try:
+            c = list(map(float, c_raw.split()))
+            
+            A = []
+            b = []
+            rls = []
+            for line in constraints_raw.split('\n'):
+                parts = line.split()
+                if len(parts) < 3:
+                    raise ValueError(f"Ràng buộc không đúng định dạng: {line}")
+                *coef_str, sign, rhs_str = parts
+                A.append(list(map(float, coef_str)))
+                rls.append(sign)
+                b.append(float(rhs_str))
+
+            var_types = [line.strip() for line in var_bounds_raw.split('\n') if line.strip()]
+
+        except Exception as e:
+            message = f"Lỗi dữ liệu nhập: {e}"
+            return render_template('index.html', message=message, methods=None,
+                                   problem_type=loai_bt, objective_coeffs=c_raw,
+                                   constraints=constraints_raw, variable_bounds=var_bounds_raw)
+
+        if action == 'get_methods':
+            ALL_METHODS = ['geometry', 'simplex', 'bland', 'two_phase']
+            methods = ALL_METHODS.copy()
+            if len(c) > 3 and 'geometry' in methods:
+                methods.remove('geometry')
+
+        elif action == 'solve':
+            phuong_phap = request.form.get('method')
+            try:
+                result = giai_tu_dong(loai_bt, np.array(c), np.array(A), np.array(b), rls, var_types, phuong_phap)
+                message = f"Đã giải xong với phương pháp {phuong_phap}!"
+            except Exception as e:
+                message = f"Lỗi khi giải bài toán: {e}"
+
+            methods = ['geometry', 'simplex', 'bland', 'two_phase']
+
+    else:
+        loai_bt = ''
+        c_raw = ''
+        constraints_raw = ''
+        var_bounds_raw = ''
+
+    return render_template('index.html', methods=methods, message=message, result=result,
+                           problem_type=loai_bt,
+                           objective_coeffs=c_raw,
+                           constraints=constraints_raw,
+                           variable_bounds=var_bounds_raw)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
