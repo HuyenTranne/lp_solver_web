@@ -95,10 +95,13 @@
                 phuongPhapSelect.innerHTML = '<option value="">-- Chọn phương pháp --</option>';
                 methods.forEach(m => {
                     const opt = document.createElement('option');
-                    opt.value = m;
-                    opt.textContent = m;
+                    opt.value = m.id;       // dùng id làm value
+                    opt.textContent = m.name;  // hiển thị tên
                     phuongPhapSelect.appendChild(opt);
                 });
+            })
+            .catch(() => {
+                alert('Lỗi khi lấy danh sách phương pháp!');
             });
         });
 

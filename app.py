@@ -12,8 +12,12 @@ def get_methods():
     data = request.json
     num_vars = int(data.get('num_vars', 0))
     num_cons = int(data.get('num_cons', 0))
-    methods = xet_phuong_phap(num_vars, num_cons)
-    return jsonify({'methods': methods})
+    methods = xet_phuong_phap(num_vars, num_cons)  # giả sử trả list tên phương pháp
+    
+    # Tạo danh sách dict gồm id và tên để frontend dễ chọn
+    methods_list = [{'id': i+1, 'name': name} for i, name in enumerate(methods)]
+    
+    return jsonify({'methods': methods_list})
 
 @app.route('/solve', methods=['POST'])
 def solve():
@@ -34,9 +38,11 @@ def solve():
         b.append(float(parts[num_vars + 1]))
     
     var_types = data.get('var_types', '').strip().split()
-    phuong_phap = data.get('phuong_phap')
-
-    ket_qua = giai_tu_dong(loai_bt, c, A, b, rls, var_types, phuong_phap)
+    phuong_phap = data.get('phuong_phap')  # id phương pháp dạng số hoặc tên
+    
+    # Gọi giai_tu_dong đúng tham số (sửa lại thứ tự tham số và thêm phuong_phap cuối)
+    ket_qua = giai_tu_dong(loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)
+    
     return jsonify({'ket_qua': ket_qua})
 
 if __name__ == '__main__':
