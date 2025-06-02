@@ -1,6 +1,6 @@
 import numpy as np
 from flask import Flask, render_template, request, jsonify
-from qhtt import giai_tu_dong  # Giữ nguyên hàm giải của bạn
+from qhtt import giai_tu_dong, hinh_hoc
 
 app = Flask(__name__)
 
@@ -58,7 +58,7 @@ def get_methods():
 def solve():
     try:
         data = request.json
-        print("Received JSON:", data)  # <--- Thêm dòng này để debug
+        print("Received JSON:", data)
 
         loai_bt = data.get('loai_bt')
         num_vars = int(data.get('num_vars', 0))
@@ -78,13 +78,26 @@ def solve():
         var_types = data.get('var_types', '').strip().split()
         phuong_phap = data.get('phuong_phap')
 
-        print("Parsed data:", loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)  # log
+        print("Parsed data:", loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)
 
-        ket_qua = giai_tu_dong(loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)
+        if phuong_phap == "1":
+            if num_vars != 2:
+                return jsonify({'error': 'Phương pháp hình học chỉ áp dụng cho bài toán 2 biến.'}), 400
+
+            x_opt, z_opt = hinh_hoc(A, b, c, loai_bt, rls, var_types, [f"x{i+1}" for i in range(num_vars)])
+            if x_opt is None:
+                ket_qua = "Bài toán vô nghiệm hoặc không giới nội."
+            else:
+                ket_qua = f"Nghiệm tối ưu: {x_opt}, Giá trị tối ưu: {z_opt:.2f}"
+        else:
+            ket_qua = giai_tu_dong(loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)
+
         return jsonify({'ket_qua': ket_qua})
+
     except Exception as e:
-        print("LỖI SERVER:", str(e))  # In lỗi cụ thể ra console
+        print("LỖI SERVER:", str(e))
         return jsonify({'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':

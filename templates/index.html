@@ -8,6 +8,7 @@
     <h1>Giải bài toán quy hoạch tuyến tính</h1>
 
     <form id="lpForm">
+        <!-- Form như cũ không thay đổi -->
         <label>Loại bài toán:</label>
         <select name="loai_bt" required>
             <option value="max">Max</option>
@@ -45,6 +46,9 @@
     <h2>Kết quả:</h2>
     <pre id="result"></pre>
 
+    <!-- ✅ Thêm ảnh nếu có -->
+    <img id="plotImage" style="max-width: 100%; display: none;" />
+
     <script>
         const btnCreateConstraints = document.getElementById('btnCreateConstraints');
         const constraintsContainer = document.getElementById('constraints-container');
@@ -52,6 +56,7 @@
         const btnSolve = document.getElementById('btnSolve');
         const phuongPhapSelect = document.getElementById('phuong_phap');
         const resultPre = document.getElementById('result');
+        const plotImage = document.getElementById('plotImage');
 
         btnCreateConstraints.addEventListener('click', () => {
             constraintsContainer.innerHTML = '';
@@ -84,7 +89,6 @@
                 return;
             }
 
-            // Lấy phần b từ các ràng buộc
             let b_arr = [];
             for (let i = 0; i < parseInt(num_cons); i++) {
                 const val = document.querySelector(`input[name="constraint_${i}"]`);
@@ -93,7 +97,6 @@
                     return;
                 }
                 let parts = val.value.trim().split(' ');
-                // Lấy phần tử cuối làm b (phần hằng số bên phải ràng buộc)
                 b_arr.push(parts[parts.length - 1]);
             }
 
@@ -151,9 +154,18 @@
             .then(res => res.json())
             .then(data => {
                 resultPre.textContent = data.ket_qua;
+
+                // Nếu có ảnh base64 từ server thì hiển thị
+                if (data.image_base64) {
+                    plotImage.src = 'data:image/png;base64,' + data.image_base64;
+                    plotImage.style.display = 'block';
+                } else {
+                    plotImage.style.display = 'none';
+                }
             })
             .catch(() => {
                 resultPre.textContent = "Lỗi khi gọi server!";
+                plotImage.style.display = 'none';
             });
         });
     </script>
