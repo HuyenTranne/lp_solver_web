@@ -1488,6 +1488,11 @@ if __name__ == "__main__":
 
 # Thêm vào cuối file qhtt.py
 def giai_tu_dong(loai_bt, c_original, A_original, b_original, rls, n_original_vars, var_types, phuong_phap = None):
+
+    c_original = np.array(c_original)
+    A_original = np.array(A_original)
+    b_original = np.array(b_original)
+    
     c_std, A_std, b_std, n_std, std_var_names = chuyen_ve_dang_chuan(loai_bt, c_original, A_original, b_original, rls, var_types)
 
     #phuong_phap_duoc_chon = xet_phuong_phap(n_original_vars, b_std)
@@ -1503,7 +1508,7 @@ def giai_tu_dong(loai_bt, c_original, A_original, b_original, rls, n_original_va
     elif phuong_phap_duoc_chon == 3:
         final_x_values, val_primal = bland(c_std, A_std, b_std, loai_bt, n_original_vars, var_types, std_var_names)
     elif phuong_phap_duoc_chon == 4:
-        hai_pha(A_std,b_std,c_std,loai_bt)
+        final_x_values, val_primal = hai_pha(A_std,b_std,c_std,loai_bt)
     else:
         return "Phương pháp không hợp lệ!"
 
