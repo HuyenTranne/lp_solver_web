@@ -75,7 +75,7 @@ def solve():
     var_types = data.get('var_types', '').strip().split()
     phuong_phap = data.get('phuong_phap')
 
-    ket_qua = giai_tu_dong(loai_bt, c, A, b, rls, var_types, phuong_phap)
+    ket_qua = giai_tu_dong(loai_bt, c, A, b, rls, num_vars, var_types, phuong_phap)
     return jsonify({'ket_qua': ket_qua})
 
 if __name__ == '__main__':

@@ -1458,6 +1458,9 @@ def hai_pha(A,b,c,loai):
             in_ket_qua_cuoi_cung("UNBOUNDED", c, A, loai)
     else:
         in_ket_qua_cuoi_cung(None, c, A, loai)
+    
+    return final_x_values, val_primal
+
 
 
 if __name__ == "__main__":
@@ -1480,7 +1483,7 @@ if __name__ == "__main__":
         final_x_values, val_primal = bland(c_std, A_std, b_std, loai_bt, n_original_vars, var_types, standardized_var_names)
     else: # phuong_phap_duoc_chon == 4
         print("\n--- Bạn đã chọn: Giải bằng phương pháp hai pha ---")
-        hai_pha(A_std,b_std,c_std,loai_bt)
+        final_x_values, val_primal = hai_pha(A_std,b_std,c_std,loai_bt)
         # Gọi hàm giải bằng phương hai pha ở đây
 
 # Thêm vào cuối file qhtt.py
