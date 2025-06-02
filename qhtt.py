@@ -1449,6 +1449,8 @@ def hai_pha(A,b,c,loai):
 
         for i, val in enumerate(x_vals):
             print(f"x{i+1} = {val:.4f}")
+
+        return x_vals, z
     
     tableau = create_initial_tableau(A,b)
     print_tableau(tableau)
