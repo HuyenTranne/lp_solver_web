@@ -1,58 +1,145 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8" />
-<title>Giải bài toán Quy hoạch tuyến tính</title>
-<style>
-  body { font-family: Arial; margin: 30px; max-width: 600px; }
-  label { font-weight: bold; display: block; margin-top: 15px; }
-  input, textarea, select, button { width: 100%; margin-top: 5px; padding: 8px; }
-  .button-group { display: flex; gap: 10px; margin-top: 15px; }
-</style>
+    <meta charset="UTF-8" />
+    <title>Giải bài toán Quy Hoạch Tuyến Tính</title>
 </head>
 <body>
+    <h1>Giải bài toán Quy Hoạch Tuyến Tính</h1>
 
-<h2>Giải bài toán Quy hoạch tuyến tính</h2>
+    <form id="lpForm">
+        <label>Loại bài toán:</label>
+        <select name="loai_bt" required>
+            <option value="max">Max</option>
+            <option value="min">Min</option>
+        </select><br><br>
 
-<form method="post" action="/">
-  <label>Loại bài toán (max/min):</label>
-  <select name="problem_type" required>
-    <option value="max" {% if problem_type == 'max' %}selected{% endif %}>Max</option>
-    <option value="min" {% if problem_type == 'min' %}selected{% endif %}>Min</option>
-  </select>
+        <label>Số biến:</label>
+        <input type="number" name="num_vars" min="1" required><br><br>
 
-  <label>Hệ số hàm mục tiêu (cách nhau bằng dấu cách):</label>
-  <input type="text" name="objective_coeffs" placeholder="Ví dụ: 1 2 3" required value="{{ objective_coeffs }}"/>
+        <label>Số ràng buộc:</label>
+        <input type="number" name="num_cons" min="1" required><br><br>
 
-  <label>Ràng buộc (mỗi dòng một ràng buộc, ví dụ: 1 1 >= 3):</label>
-  <textarea name="constraints" rows="4" placeholder="1 1 >= 3\n2 1 <= 5" required>{{ constraints }}</textarea>
+        <label>Hệ số hàm mục tiêu (c), cách nhau dấu cách:</label><br>
+        <input type="text" name="c" placeholder="VD: 3 5 2" required><br><br>
 
-  <label>Dấu của các biến (mỗi dòng, ví dụ: x1 >= 0):</label>
-  <textarea name="variable_bounds" rows="3" placeholder="x1 >= 0\nx2 >= 0">{{ variable_bounds }}</textarea>
+        <label>Nhập các ràng buộc (mỗi ràng buộc dạng: a1 a2 ... an dấu b), cách nhau dấu cách:</label><br>
+        <small>Ví dụ ràng buộc 2 biến: "1 1 >= 3"</small><br>
 
-  <div class="button-group">
-    <button type="submit" name="action" value="get_methods">Lấy dữ liệu và xem phương pháp</button>
-    
-    {% if methods %}
-    <select name="method" required>
-      {% for m in methods %}
-      <option value="{{m}}">{{m}}</option>
-      {% endfor %}
-    </select>
-    <button type="submit" name="action" value="solve">Giải bài toán</button>
-    {% endif %}
-  </div>
-</form>
+        <div id="constraints-container"></div>
+        <button type="button" id="btnCreateConstraints">Tạo ô nhập ràng buộc</button><br><br>
 
-{% if message %}
-<p><strong>{{ message }}</strong></p>
-{% endif %}
+        <label>Kiểu dấu của từng biến (ví dụ: >=0, <=0, tự do), cách nhau dấu cách:</label><br>
+        <input type="text" name="var_types" placeholder="VD: >=0 >=0 >=0" required><br><br>
 
-{% if result %}
-<hr>
-<h3>Kết quả:</h3>
-<pre>{{ result }}</pre>
-{% endif %}
+        <button type="button" id="btnCheckMethods">Phương pháp</button><br><br>
 
+        <label>Chọn phương pháp giải:</label><br>
+        <select name="phuong_phap" id="phuong_phap" required>
+            <option value="">-- Chưa chọn phương pháp --</option>
+        </select><br><br>
+
+        <button type="button" id="btnSolve">Giải bài toán</button>
+    </form>
+
+    <h2>Kết quả:</h2>
+    <pre id="result"></pre>
+
+    <script>
+        const btnCreateConstraints = document.getElementById('btnCreateConstraints');
+        const constraintsContainer = document.getElementById('constraints-container');
+        const btnCheckMethods = document.getElementById('btnCheckMethods');
+        const btnSolve = document.getElementById('btnSolve');
+        const phuongPhapSelect = document.getElementById('phuong_phap');
+        const resultPre = document.getElementById('result');
+
+        btnCreateConstraints.addEventListener('click', () => {
+            constraintsContainer.innerHTML = '';
+
+            const num_vars = parseInt(document.querySelector('input[name="num_vars"]').value);
+            const num_cons = parseInt(document.querySelector('input[name="num_cons"]').value);
+
+            if (isNaN(num_vars) || num_vars < 1 || isNaN(num_cons) || num_cons < 1) {
+                alert('Bạn phải nhập số biến và số ràng buộc hợp lệ trước!');
+                return;
+            }
+
+            for (let i = 0; i < num_cons; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.name = 'constraint_' + i;
+                input.placeholder = `Ràng buộc ${i+1}: a1 a2 ... a${num_vars} dấu b`;
+                input.required = true;
+                constraintsContainer.appendChild(input);
+                constraintsContainer.appendChild(document.createElement('br'));
+            }
+        });
+
+        btnCheckMethods.addEventListener('click', () => {
+            const num_vars = document.querySelector('input[name="num_vars"]').value;
+            const num_cons = document.querySelector('input[name="num_cons"]').value;
+
+            if (!num_vars || !num_cons) {
+                alert('Nhập số biến và số ràng buộc trước!');
+                return;
+            }
+
+            fetch('/get_methods', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({num_vars, num_cons})
+            })
+            .then(res => res.json())
+            .then(data => {
+                const methods = data.methods;
+                phuongPhapSelect.innerHTML = '<option value="">-- Chọn phương pháp --</option>';
+                methods.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = m;
+                    phuongPhapSelect.appendChild(opt);
+                });
+            });
+        });
+
+        btnSolve.addEventListener('click', () => {
+            const loai_bt = document.querySelector('select[name="loai_bt"]').value;
+            const num_vars = parseInt(document.querySelector('input[name="num_vars"]').value);
+            const num_cons = parseInt(document.querySelector('input[name="num_cons"]').value);
+            const c = document.querySelector('input[name="c"]').value;
+            const var_types = document.querySelector('input[name="var_types"]').value;
+            const phuong_phap = phuongPhapSelect.value;
+
+            if (!phuong_phap) {
+                alert('Bạn phải chọn phương pháp giải trước!');
+                return;
+            }
+
+            let constraints = [];
+            for (let i = 0; i < num_cons; i++) {
+                const val = document.querySelector(`input[name="constraint_${i}"]`);
+                if (!val || !val.value.trim()) {
+                    alert(`Bạn phải nhập ràng buộc thứ ${i+1}!`);
+                    return;
+                }
+                constraints.push(val.value.trim());
+            }
+
+            fetch('/solve', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    loai_bt, num_vars, num_cons, c, var_types, phuong_phap, constraints
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                resultPre.textContent = data.ket_qua;
+            })
+            .catch(err => {
+                resultPre.textContent = "Lỗi khi gọi server!";
+            });
+        });
+    </script>
 </body>
 </html>
